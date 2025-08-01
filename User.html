@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Tele Mini App Kiếm Tiền</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --primary: #4F8A8B;
+            --secondary: #F6C90E;
+            --bg: #F7F7F7;
+            --text: #222831;
+            --success: #43C59E;
+            --danger: #FF4C29;
+        }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background: var(--primary);
+            color: #fff;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.2em;
+            letter-spacing: 1px;
+            position: relative;
+        }
+        .balance-show {
+            position: absolute;
+            right: 20px;
+            top: 15px;
+            font-weight: bold;
+            color: var(--secondary);
+            background: #fff8;
+            padding: 7px 14px;
+            border-radius: 20px;
+            font-size: 1em;
+        }
+        .container {
+            max-width: 500px;
+            margin: 30px auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px #0001;
+            padding: 24px;
+            min-height: 500px;
+        }
+        .tab-btns {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 10px 0;
+            background: #eee;
+            border: none;
+            border-radius: 5px 5px 0 0;
+            margin: 0 2px;
+            font-weight: bold;
+            color: var(--primary);
+            cursor: pointer;
+            transition: background 0.2s;
+            border-bottom: 2px solid transparent;
+        }
+        .tab-btn.active {
+            background: var(--primary);
+            color: #fff;
+            border-bottom: 2px solid var(--secondary);
+        }
+        .hidden { display: none; }
+        .task-card {
+            background: #f9f9f9;
+            border-left: 6px solid var(--secondary);
+            margin-bottom: 16px;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .task-actions button,
+        .form-group input,
+        .form-group select {
+            padding: 8px;
+            margin-top: 6px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .task-actions button {
+            width: auto;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            font-weight: 500;
+            margin-right: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .task-actions button.done {
+            background: var(--success);
+        }
+        .task-actions button.x {
+            background: var(--danger);
+        }
+        .task-actions button.del {
+            background: var(--danger);
+        }
+        .form-group {
+            margin-bottom: 12px;
+        }
+        .form-group label {
+            font-weight: 500;
+        }
+        .withdraw-form button {
+            background: var(--secondary);
+            color: var(--text);
+            border: none;
+            width: 100%;
+            padding: 10px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .admin-form button {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            width: 100%;
+            padding: 10px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        .alert {
+            padding: 10px;
+            background: var(--success);
+            color: #fff;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        .banner-ad {
+            margin: 8px 0 18px 0;
+            box-shadow: 0 2px 8px #0001;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #fffbe8;
+            padding: 10px;
+            text-align: center;
+        }
+        .banner-ad h3 {
+            color: var(--danger);
+            margin: 0 0 5px 0;
+        }
+        .banner-ad img {
+            max-width: 100%;
+            border-radius: 7px;
+            margin-bottom: 6px;
+        }
+        progress {
+            width: 100%;
+            height: 18px;
+            margin-top: 8px;
+        }
+        .admin-only { display: none; }
+    </style>
+</head>
+<body>
+    <header class="header">
+    <span class="logo">8M1WORK Kiếm Tiền</span>
+    <span class="balance-show">Số dư: <span id="balanceHeader">0</span> đ</span>
+</header>
+
+<style>
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+        background-color: #4d908e;
+        color: white;
+        font-weight: bold;
+        font-size: 16px;
+    }
+
+    .balance-show {
+        font-size: 14px;
+        color: #ffeb3b;
+    }
+
+    .logo {
+        font-size: 18px;
+    }
+</style>
+    <div class="container">
+
+        <div class="tab-btns">
+            <button class="tab-btn active" id="tab-btn-link" onclick="showTab('link')">Vượt link</button>
+            <button class="tab-btn" id="tab-btn-ad" onclick="showTab('ad')">Quảng cáo</button>
+            <button class="tab-btn" id="tab-btn-app" onclick="showTab('app')">Tải app</button>
+            <button class="tab-btn" id="tab-btn-withdraw" onclick="showTab('withdraw')">Rút tiền</button>
+            <button class="tab-btn admin-only" id="tab-btn-admin" onclick="showTab('admin')">Admin</button>
+        </div>
+
+        <!-- Nhiệm vụ Vượt link -->
+        <div id="tab-link">
+            <h2>Nhiệm vụ vượt link</h2>
+            <div id="task-list-link"></div>
+        </div>
+
+        <!-- Nhiệm vụ Quảng cáo -->
+        <div id="tab-ad" class="hidden">
+            <h2>Nhiệm vụ xem quảng cáo</h2>
+            <!-- Banner quảng cáo đa dạng HTML -->
+            <div class="banner-ad" id="banner-ad">
+                <h3>🔥 Ưu đãi đặc biệt!</h3>
+                <img src="https://cdn.pixabay.com/photo/2017/01/06/19/15/banner-1954294_640.jpg" alt="Banner Quảng Cáo">
+                <div>
+                    <span style="font-size:1.1em;color:var(--primary);">Nhấn vào quảng cáo này để nhận thưởng!</span>
+                    <br>
+                    <a href="https://your-ad-link.com" target="_blank" style="background:var(--secondary);color:var(--text);padding:7px 12px;text-decoration:none;border-radius:4px;margin-top:6px;display:inline-block">Xem ngay</a>
+                </div>
+            </div>
+            <div id="task-list-ad"></div>
+        </div>
+
+        <!-- Nhiệm vụ Tải app -->
+        <div id="tab-app" class="hidden">
+            <h2>Nhiệm vụ tải app</h2>
+            <div id="task-list-app"></div>
+        </div>
+
+        <!-- Rút tiền -->
+        <div id="tab-withdraw" class="hidden">
+            <h2>Rút tiền</h2>
+            <form class="withdraw-form" onsubmit="withdraw(event)">
+                <div class="form-group">
+                    <label>Số dư hiện tại: <span id="balance">0</span> đ</label>
+                </div>
+                <div class="form-group">
+                    <label>Họ tên chủ tài khoản</label>
+                    <input type="text" id="owner" required>
+                </div>
+                <div class="form-group">
+                    <label>Tên ngân hàng</label>
+                    <input type="text" id="bank" required>
+                </div>
+                <div class="form-group">
+                    <label>Số tài khoản</label>
+                    <input type="text" id="account" required>
+                </div>
+                <div class="form-group">
+                    <label>Số tiền muốn rút (>= 20.000đ)</label>
+                    <input type="number" id="money" min="20000" required>
+                </div>
+                <button type="submit">Rút tiền</button>
+            </form>
+            <div id="withdraw-alert" class="alert hidden"></div>
+        </div>
+
+        <!-- Admin -->
+        <div id="tab-admin" class="hidden">
+            <h2>Thêm nhiệm vụ</h2>
+            <form class="admin-form" onsubmit="addTask(event)">
+                <div class="form-group">
+                    <label>Tên nhiệm vụ</label>
+                    <input type="text" id="taskName" required>
+                </div>
+                <div class="form-group">
+                    <label>Loại nhiệm vụ</label>
+                    <select id="taskType" required onchange="toggleIdPhoneReq()">
+                        <option value="vượt_link">Vượt link</option>
+                        <option value="quảng_cáo">Quảng cáo</option>
+                        <option value="tải_app">Tải app</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Số tiền thưởng</label>
+                    <input type="number" id="taskReward" min="100" required>
+                </div>
+                <div class="form-group">
+                    <label>Số lượt</label>
+                    <input type="number" id="taskMaxUsers" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label>Link nhiệm vụ</label>
+                    <input type="text" id="taskUrl" required>
+                </div>
+                <div class="form-group" id="idPhoneReqGroup" style="display:none">
+                    <label>Yêu cầu ID/SĐT khi hoàn thành?</label>
+                    <select id="taskIdPhoneReq">
+                        <option value="false">Không</option>
+                        <option value="true">Có</option>
+                    </select>
+                </div>
+                <button type="submit">Thêm nhiệm vụ</button>
+            </form>
+
+            <h2>Danh sách nhiệm vụ</h2>
+            <div id="admin-task-list"></div>
+        </div>
+
+    </div>
+    <script>
+        // Đặt quyền admin ở đây
+        let isAdmin = false; // Đổi thành true nếu là admin
+
+        let balance = 0;
+        let tasks = [
+            {
+                name: "Vượt link kiếm tiền",
+                type: "vượt_link",
+                reward: 500,
+                max_users: 100,
+                url: "https://shortlink.com/abc",
+                require_id: false,
+                done: 0,
+                id: 1
+            },
+            {
+                name: "Xem quảng cáo 15s",
+                type: "quảng_cáo",
+                reward: 300,
+                max_users: 200,
+                url: "https://ads.com/xyz",
+                require_id: false,
+                done: 0,
+                id: 2
+            },
+            {
+                name: "Tải app ABC",
+                type: "tải_app",
+                reward: 1000,
+                max_users: 50,
+                url: "https://play.google.com/store/apps/abc",
+                require_id: true,
+                done: 0,
+                id: 3,
+                pending: []
+            }
+        ];
+        let nextTaskId = 4;
+
+        // Tab switching
+        function showTab(tab) {
+            let tabs = ['link', 'ad', 'app', 'withdraw', 'admin'];
+            tabs.forEach(t => document.getElementById('tab-' + t).classList.add('hidden'));
+            tabs.forEach(t => document.getElementById('tab-btn-' + t).classList.remove('active'));
+            document.getElementById('tab-' + tab).classList.remove('hidden');
+            document.getElementById('tab-btn-' + tab).classList.add('active');
+            if(tab === 'link') renderTasks('vượt_link');
+            if(tab === 'ad') renderTasks('quảng_cáo');
+            if(tab === 'app') renderTasks('tải_app');
+            if(tab === 'admin') renderAdminTasks();
+            if(tab === 'withdraw') renderBalance();
+            updateBalanceHeader();
+        }
+
+        // Render nhiệm vụ theo loại cho user
+        function renderTasks(type) {
+            let html = "";
+            tasks.forEach((task, idx) => {
+                if (task.type !== type || task.done >= task.max_users) return;
+                html += `<div class="task-card">
+                    <b>${task.name}</b> <span style="color:var(--secondary);float:right">${task.reward}đ</span><br>
+                    <i>Loại: ${task.type.replace('_',' ')}</i> | Số lượt còn: ${task.max_users - task.done}
+                    <div class="task-actions" id="actions-${type}-${task.id}">
+                        ${task.type === 'vượt_link' ? `
+                            <button onclick="startLinkTask(${task.id})" id="btn-start-link-${task.id}">Bắt đầu</button>
+                            <button onclick="completeLinkTask(${task.id})" id="btn-done-link-${task.id}" disabled>Hoàn thành</button>
+                            <progress id="progress-link-${task.id}" value="0" max="45" class="hidden"></progress>
+                        ` : ''}
+                        ${task.type === 'quảng_cáo' ? `
+                            <button onclick="startAdTask(${task.id})" id="btn-ad-${task.id}">Thực hiện</button>
+                            <progress id="progress-ad-${task.id}" value="0" max="15" class="hidden"></progress>
+                            <button onclick="completeAdTask(${task.id})" id="btn-x-${task.id}" class="x hidden">X</button>
+                        ` : ''}
+                        ${task.type === 'tải_app' ? `
+                            <button onclick="startAppTask(${task.id})" id="btn-app-${task.id}">Thực hiện</button>
+                        ` : ''}
+                    </div>
+                </div>`;
+            });
+            if(type === 'vượt_link')
+                document.getElementById('task-list-link').innerHTML = html;
+            if(type === 'quảng_cáo')
+                document.getElementById('task-list-ad').innerHTML = html;
+            if(type === 'tải_app')
+                document.getElementById('task-list-app').innerHTML = html;
+        }
+
+        // Link Task Logic
+        let linkTimers = {};
+        let activeLinkTask = {};
+        function startLinkTask(taskId) {
+            let task = tasks.find(t=>t.id === taskId);
+            if (!activeLinkTask[taskId]) {
+                window.open(task.url, '_blank');
+                document.getElementById(`btn-start-link-${taskId}`).disabled = true;
+                document.getElementById(`progress-link-${taskId}`).classList.remove('hidden');
+                let time = 0;
+                activeLinkTask[taskId] = { time: 0, timer: null, started: true };
+                linkTimers[taskId] = setInterval(() => {
+                    time++;
+                    activeLinkTask[taskId].time = time;
+                    document.getElementById(`progress-link-${taskId}`).value = time;
+                    if (time >= 45) {
+                        clearInterval(linkTimers[taskId]);
+                        document.getElementById(`btn-done-link-${taskId}`).disabled = false;
+                        activeLinkTask[taskId].canComplete = true;
+                    }
+                }, 1000);
+            }
+        }
+        function completeLinkTask(taskId) {
+            let task = tasks.find(t=>t.id === taskId);
+            let active = activeLinkTask[taskId];
+            if (active && active.time >= 45 && active.canComplete) {
+                balance += task.reward;
+                task.done++;
+                delete activeLinkTask[taskId];
+                renderTasks('vượt_link');
+                renderBalance();
+                updateBalanceHeader();
+                showAlert('Đã cộng tiền!', 'link');
+            } else if (active && active.started) {
+                showAlert('Chưa đủ thời gian! Hãy đợi đủ 45 giây.', 'link');
+            } else {
+                showAlert('Bạn chưa bắt đầu nhiệm vụ này hoặc đã thoát ra. Vui lòng nhấn "Bắt đầu" lại.', 'link');
+            }
+        }
+
+        // Khi người dùng vô tình reload/thoát, không mất nhiệm vụ
+        // Nếu chưa hoàn thành thì cho bắt đầu lại, không cộng tiền
+        window.onbeforeunload = function() {
+            Object.keys(linkTimers).forEach(id=>clearInterval(linkTimers[id]));
+            activeLinkTask = {};
+        }
+
+        // Ad Task Logic
+        let adTimers = {};
+        function startAdTask(taskId) {
+            let task = tasks.find(t=>t.id === taskId);
+            window.open(task.url, '_blank');
+            document.getElementById(`btn-ad-${taskId}`).disabled = true;
+            document.getElementById(`progress-ad-${taskId}`).classList.remove('hidden');
+            let time = 0;
+            adTimers[taskId] = setInterval(() => {
+                time++;
+                document.getElementById(`progress-ad-${taskId}`).value = time;
+                if (time >= 15) {
+                    clearInterval(adTimers[taskId]);
+                    document.getElementById(`btn-x-${taskId}`).classList.remove('hidden');
+                }
+            }, 1000);
+        }
+        function completeAdTask(taskId) {
+            let task = tasks.find(t=>t.id === taskId);
+            balance += task.reward;
+            task.done++;
+            renderTasks('quảng_cáo');
+            renderBalance();
+            updateBalanceHeader();
+            showAlert('Đã cộng tiền!', 'ad');
+        }
+
+        // App Task Logic
+        function startAppTask(taskId) {
+            let task = tasks.find(t=>t.id === taskId);
+            window.open(task.url, '_blank');
+            let formHtml = `<div class="alert">
+                <b>Nhập ${task.require_id ? 'ID hoặc SĐT' : ''} để xác nhận tải app</b>
+                <input type="text" id="app-check-${taskId}" placeholder="Nhập ${task.require_id ? 'ID hoặc SĐT' : ''}" style="margin-top:8px;">
+                <button onclick="submitAppTask(${taskId})" class="done" style="margin-top:6px;">Gửi xác nhận</button>
+            </div>`;
+            document.getElementById(`actions-tải_app-${taskId}`).innerHTML += formHtml;
+        }
+        function submitAppTask(taskId) {
+            let task = tasks.find(t=>t.id === taskId);
+            let val = document.getElementById(`app-check-${taskId}`).value;
+            if (task.require_id && !val) {
+                showAlert('Bạn cần nhập ID/SĐT!', 'app');
+                return;
+            }
+            task.pending = task.pending || [];
+            task.pending.push(val);
+            showAlert('Chờ admin duyệt!', 'app');
+            renderTasks('tải_app');
+        }
+
+        // Rút tiền
+        function renderBalance() {
+            document.getElementById('balance').innerText = balance;
+        }
+        function updateBalanceHeader() {
+            document.getElementById('balanceHeader').innerText = balance;
+        }
+        function withdraw(e) {
+            e.preventDefault();
+            let owner = document.getElementById('owner').value.trim();
+            let bank = document.getElementById('bank').value.trim();
+            let account = document.getElementById('account').value.trim();
+            let money = Number(document.getElementById('money').value);
+            if (money > balance) {
+                showAlert('Không đủ số dư!', 'withdraw');
+                return;
+            }
+            if (money < 20000) {
+                showAlert('Số tiền rút phải >= 20.000đ!', 'withdraw');
+                return;
+            }
+            balance -= money;
+            showAlert('Yêu cầu rút tiền đã gửi!', 'withdraw');
+            renderBalance();
+            updateBalanceHeader();
+            e.target.reset();
+        }
+
+        // Alert helper
+        function showAlert(msg, tab) {
+            let alertDiv;
+            if(tab === 'link') alertDiv = getAlertBox('task-list-link');
+            else if(tab === 'ad') alertDiv = getAlertBox('task-list-ad');
+            else if(tab === 'app') alertDiv = getAlertBox('task-list-app');
+            else alertDiv = document.getElementById('withdraw-alert');
+            alertDiv.innerHTML = msg;
+            alertDiv.classList.remove('hidden');
+            setTimeout(()=>alertDiv.classList.add('hidden'), 2500);
+        }
+        function getAlertBox(parentId) {
+            let parent = document.getElementById(parentId);
+            let alert = parent.querySelector('.alert');
+            if(!alert) {
+                alert = document.createElement('div');
+                alert.className = 'alert hidden';
+                parent.prepend(alert);
+            }
+            return alert;
+        }
+
+        // Admin Task Render
+        function renderAdminTasks() {
+            let html = "";
+            tasks.forEach((task, idx) => {
+                html += `<div class="task-card">
+                    <b>${task.name}</b> <span style="color:var(--secondary);float:right">${task.reward}đ</span><br>
+                    <i>Loại: ${task.type.replace('_',' ')}</i> | Số lượt đã làm: ${task.done}/${task.max_users}
+                    <br>Link: <a href="${task.url}" target="_blank">${task.url}</a>
+                    <button class="del" onclick="deleteTask(${task.id})">Xóa</button>
+                    ${task.type === 'tải_app' && task.pending && task.pending.length ? `
+                        <div style="margin-top:6px;">
+                            <b>Yêu cầu duyệt tải app:</b>
+                            <ul>${task.pending.map((p,i)=>`
+                                <li>${p} <button onclick="approveApp(${task.id},${i})" style="background:var(--success);color:#fff;border:none;padding:2px 6px;border-radius:4px;">Duyệt</button></li>
+                            `).join('')}</ul>
+                        </div>
+                    ` : ''}
+                </div>`;
+            });
+            document.getElementById('admin-task-list').innerHTML = html;
+        }
+        function deleteTask(taskId) {
+            tasks = tasks.filter(t=>t.id!==taskId);
+            renderAdminTasks();
+            renderTasks('vượt_link');
+            renderTasks('quảng_cáo');
+            renderTasks('tải_app');
+        }
+        // Admin approve tải app
+        function approveApp(taskId, pIdx) {
+            let task = tasks.find(t=>t.id === taskId);
+            balance += task.reward;
+            task.done++;
+            task.pending.splice(pIdx, 1);
+            renderAdminTasks();
+            renderTasks('tải_app');
+            renderBalance();
+            updateBalanceHeader();
+        }
+
+        // Admin add task
+        function addTask(e) {
+            e.preventDefault();
+            let name = document.getElementById('taskName').value;
+            let type = document.getElementById('taskType').value;
+            let reward = Number(document.getElementById('taskReward').value);
+            let maxUsers = Number(document.getElementById('taskMaxUsers').value);
+            let url = document.getElementById('taskUrl').value;
+            let require_id = type === 'tải_app' ? document.getElementById('taskIdPhoneReq').value === 'true' : false;
+            tasks.push({
+                name, type, reward, max_users: maxUsers, url, require_id, done: 0, id: nextTaskId++, pending: []
+            });
+            showAlert('Thêm nhiệm vụ thành công!', 'admin');
+            e.target.reset();
+            renderAdminTasks();
+            renderTasks('vượt_link');
+            renderTasks('quảng_cáo');
+            renderTasks('tải_app');
+        }
+
+        function toggleIdPhoneReq() {
+            const type = document.getElementById('taskType').value;
+            document.getElementById('idPhoneReqGroup').style.display = type === 'tải_app' ? '' : 'none';
+        }
+
+        // Khởi tạo tab
+        function setupTabs() {
+            if(isAdmin) {
+                document.getElementById('tab-btn-admin').classList.remove('admin-only');
+            } else {
+                document.getElementById('tab-btn-admin').classList.add('admin-only');
+                document.getElementById('tab-admin').classList.add('hidden');
+            }
+        }
+
+        setupTabs();
+        showTab('link');
+    </script>
+</body>
+</html>
