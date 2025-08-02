@@ -1,1 +1,1 @@
-# 8m1work.com
+# 8m1work
